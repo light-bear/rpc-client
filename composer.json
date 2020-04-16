@@ -1,0 +1,41 @@
+{
+  "name": "light-bear/rpc-client",
+  "description": "rpc-client",
+  "type": "library",
+  "keywords": [
+    "php",
+    "laravel",
+    "lumen",
+    "rpc",
+    "rpc-client"
+  ],
+  "homepage": "https://github.com/light-bear/",
+  "license": "MIT",
+  "require": {
+    "php": ">=7.2",
+    "guzzlehttp/guzzle": "^6.5"
+  },
+  "authors": [
+    {
+      "name": "madman",
+      "email": "657090156@qq.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "LightBear\\RpcClient\\": "src/"
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "LightBear\\RpcClient\\Test\\": "tests/"
+      }
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "LightBear\\RpcClient\\Providers\\LaravelServiceProvider"
+      ]
+    }
+  }
+}
