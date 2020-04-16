@@ -24,11 +24,11 @@
   "autoload": {
     "psr-4": {
       "LightBear\\RpcClient\\": "src/"
-    },
-    "autoload-dev": {
-      "psr-4": {
-        "LightBear\\RpcClient\\Test\\": "tests/"
-      }
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "LightBear\\RpcClient\\Test\\": "tests/"
     }
   },
   "extra": {
