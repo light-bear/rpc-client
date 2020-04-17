@@ -21,7 +21,7 @@ return [
             // 如果没有指定上面的 registry 配置，即为直接对指定的节点进行消费，通过下面的 nodes 参数来配置服务提供者的节点信息
             'nodes' => [
                 [
-                    'host' => '192.168.1.25',
+                    'host' => '127.0.0.1',
                     'port' => 9504
                 ]
             ],
@@ -36,9 +36,12 @@ return [
         ],
         'json-rpc' => [
             'packer' => \LightBear\RpcClient\Packers\JsonPacker::class,
-            'transporter' => \LightBear\RpcClient\Transporters\JsonRpcTransporter::class,
+            'transporter' => \LightBear\RpcClient\Transporters\JsonRpcTcpTransporter::class,
             'path-generator' => \LightBear\RpcClient\PathGenerators\PathGenerator::class,
             'data-formatter' => \LightBear\RpcClient\DataFormatters\JsonDataFormatter::class,
+            'options' => [
+                'package_eof' => "\r\n"
+            ]
         ],
     ],
     'id-generator' => \LightBear\RpcClient\IdGenerators\RequestIdGenerator::class,

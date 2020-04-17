@@ -2,12 +2,12 @@
 
 namespace LightBear\RpcClient\Transporters;
 
-use GuzzleHttp\Client;
+use LightBear\RpcClient\Connectors\TcpConnector;
 use LightBear\RpcClient\LoadBalancers\Node;
 use LightBear\RpcClient\Contracts\LoadBalancerInterface;
 use LightBear\RpcClient\Contracts\TransporterInterface;
 
-class JsonRpcHttpTransporter implements TransporterInterface
+class JsonRpcTcpTransporter implements TransporterInterface
 {
     /**
      * @var null|LoadBalancerInterface
@@ -37,6 +37,13 @@ class JsonRpcHttpTransporter implements TransporterInterface
      */
     private $clientFactory;
 
+    private $packageEof = "\r\n";
+
+    public function __construct($options)
+    {
+        $this->packageEof = $options['package_eof'] ?? "\r\n";
+    }
+
     /**
      * @param string $data
      * @return string
@@ -45,27 +52,13 @@ class JsonRpcHttpTransporter implements TransporterInterface
     {
         $node = $this->getNode();
 
-        $uri = $node->host . ':' . $node->port;
-        $schema = value(function () use ($node) {
-            $schema = 'http';
-            if (property_exists($node, 'schema')) {
-                $schema = $node->schema;
-            }
-            if (!in_array($schema, ['http', 'https'])) {
-                $schema = 'http';
-            }
-            $schema .= '://';
-            return $schema;
-        });
-        $url = $schema . $uri;
         try {
-            $response = $this->getClient()->post($url, [
-                'body' => $data,
-            ]);
+            $client = $this->getClient($node)->connect();
 
-            if ($response->getStatusCode() === 200) {
-                return $response->getBody()->getContents();
-            }
+            $client->send($data . $this->packageEof);
+
+            $data = $client->receive($this->packageEof);
+            return $data;
         } catch (\Exception $e) {
             // 忽略异常
         }
@@ -80,16 +73,10 @@ class JsonRpcHttpTransporter implements TransporterInterface
         throw new \RuntimeException(__CLASS__ . ' does not support recv method.');
     }
 
-    public function getClient(): Client
+    public function getClient(Node $node): TcpConnector
     {
         if (!$this->clientFactory) {
-            $this->clientFactory = new Client([
-                'timeout' => $this->connectTimeout + $this->receiveTimeout,
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'http_errors' => false,
-            ]);
+            $this->clientFactory = new TcpConnector($node->host, $node->port, $this->connectTimeout);
         }
         return $this->clientFactory;
     }

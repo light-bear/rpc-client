@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use LightBear\RpcClient\Contracts\IdGeneratorInterface;
 use LightBear\RpcClient\Contracts\RpcServiceInterface;
 use LightBear\RpcClient\Exceptions\RequestException;
+use LightBear\RpcClient\Exceptions\RpcClientException;
 use LightBear\RpcClient\LoadBalancers\Node;
 
 abstract class AbstractServiceClient implements RpcServiceInterface
@@ -91,11 +92,15 @@ abstract class AbstractServiceClient implements RpcServiceInterface
             if (array_key_exists('result', $response)) {
                 return $response['result'];
             }
+
             if (array_key_exists('error', $response)) {
-                return $response['error'];
+                $message = $response['error']['message'] ?? 'Invalid response.';
+                $code = $response['error']['code'] ?? -32600;
+                throw new RpcClientException($message, $code);
             }
         }
-        throw new RequestException('Invalid response.');
+
+        throw new RpcClientException('Invalid response.', -32600);
     }
 
 
