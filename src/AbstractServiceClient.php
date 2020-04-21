@@ -13,6 +13,7 @@ use LightBear\RpcClient\Contracts\IdGeneratorInterface;
 use LightBear\RpcClient\Contracts\RpcServiceInterface;
 use LightBear\RpcClient\Exceptions\RequestException;
 use LightBear\RpcClient\Exceptions\RpcClientException;
+use LightBear\RpcClient\Exceptions\ServiceException;
 use LightBear\RpcClient\LoadBalancers\Node;
 
 abstract class AbstractServiceClient implements RpcServiceInterface
@@ -96,11 +97,13 @@ abstract class AbstractServiceClient implements RpcServiceInterface
             if (array_key_exists('error', $response)) {
                 $message = $response['error']['message'] ?? 'Invalid response.';
                 $code = $response['error']['code'] ?? -32600;
-                throw new RpcClientException($message, $code);
+                if ($code >= -32099 && $code <= -32000) {
+                    throw new ServiceException($message, $code);
+                }
             }
         }
 
-        throw new RpcClientException('Invalid response.', -32600);
+        throw new RpcClientException($message ?? 'Invalid response.', $code ?? -32600);
     }
 
 
@@ -158,7 +161,6 @@ abstract class AbstractServiceClient implements RpcServiceInterface
             throw new InvalidArgumentException('Parameter $serviceName missing.');
         }
 
-        $this->serviceName = 'UserService';
         return $this->pathGenerator->generate($this->serviceName, $methodName);
     }
 
